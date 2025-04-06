@@ -1,0 +1,10 @@
+.text-left {
+  text-align: left;
+  width: 90%;
+  margin: 0 auto;
+  display: block;
+}
+
+.tab {
+    margin-left: 40px; /* Standard tab size */
+}
