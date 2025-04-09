@@ -24,7 +24,7 @@
 					<h1 style="color: rgb(0, 195, 255);">bio</h1>
 					Kourosh Rajabzadeh<br>
 					Bachelor of Computer Engineering at AUT<br>
-					Cyber Security | CTF Player<br>
+					Interested in Cyber Security<br>
 				</section>
 
 
@@ -33,7 +33,7 @@
 					<p class="fragment">Useful for?</p>
 					<p class="fragment">Linux PE Definition</p>
 					<p class="fragment">Attack Vectors (Discovery and Exploit)</p>
-					<p class="fragment">Solution (Detection and Mitigation)</p>
+					<p class="fragment">Solutions and Mitigations</p>
 					<p class="fragment">Summary</p>
 				</section>
 
@@ -123,7 +123,8 @@
 								<li style="font-size: 0.5em;">NOPASSWD</li>
 								<li style="font-size: 0.5em;">dangerous binaries</li>
 								<li style="font-size: 0.5em;">env_keep (PATH, PYTHONPATH, LD_PRELOAD)</li>
-								<li style="font-size: 0.5em;">secure_path, env_reset</li>
+								<li style="font-size: 0.5em;">
+									secure_path, env_reset</li>
 							</ul>
 							<li style="font-size: 0.7em; color: rgb(150, 212, 231);"  class="fragment" data-fragment-index="10">
 								<div class="fragment highlight-red grow" data-fragment-index="11">
@@ -155,7 +156,7 @@
 					<p style="color: rgb(150, 212, 231);">Credentials/SSH Keys</p>
 
 					<section class="text-left">
-						<p>config/env files</p>
+						<p class="fragment">config/env files</p>
 
 						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="">
 							$ grep -i 'pass\|secret' /home/*/.env /root/.bashrc
@@ -396,7 +397,7 @@
 							<tr>
 								<td class="fragment" data-fragment-index="4"><strong>Cron Directories</strong></td>
 								<td class="fragment" data-fragment-index="4">System/User</td>
-								<td class="fragment" data-fragment-index="4">Use <code>Drop scripts in <code>.d</code> folders</code></td>
+								<td class="fragment" data-fragment-index="4">Drop scripts in <code>.d</code> folders</td>
 								<td class="fragment" data-fragment-index="4"><code>/etc/cron.d/</code></td>
 							</tr>
 
@@ -407,7 +408,7 @@
 
 					<section class="text-left">
 						<p>Writable cron jobs scripts</p>
-						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-4|1-2|4-5|7-8|10|12-14">
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-10|1-2|4-5|7-8|10|12-14">
 							$ cat /etc/crontab  | grep -vE "^#"
 							* * * * * root /var/www/backup.sh
 
@@ -424,7 +425,7 @@
 
 					<section class="text-left">
 						<p class="fragment">Hidden cronjobs</p>
-						<p class="fragment">Use <a href="https://github.com/DominicBreuker/pspy">pspy</a> to catch it</p>
+						<p class="fragment">Use <a href="https://github.com/DominicBreuker/pspy">pspy</a> to catch them</p>
 						<p class="fragment">It monitors linux processes without root permissions</p>
 						
 						<img class="fragment" src="media/image/pspy.png">
@@ -514,8 +515,8 @@
 					</section>
 
 					<section class="text-left">
-						env_keep + PYTHONPATH (1/2)
-						Default location to import python modules
+						<p class="fragment">env_keep + PYTHONPATH (1/2)</p>
+						<p class="fragment">Default location to import python modules</p>
 						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-11|4|7|1-11">
 							$ sudo -l
 							Matching Defaults entries for sudo2 on parrot:
@@ -545,7 +546,7 @@
 					</section>
 
 					<section class="text-left">
-						env_keep + LD_PRELOAD (1/4)
+						<p class="fragment">env_keep + LD_PRELOAD (1/4)</p>
 						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-7|4|1-7">
 							$ sudo -l
 							Matching Defaults entries for sudo3 on parrot:
@@ -571,7 +572,7 @@
 
 					<section class="text-left">
 						env_keep + LD_PRELOAD (3/4)
-						<p>sample .so file</p>
+						<p class="fragment">sample C code to generate .so file</p>
 						<pre data-id="code-animation"><code class="hljs cpp fragment" data-trim data-line-numbers="">
 							$ cat exploit.c
 
@@ -633,9 +634,62 @@
 
 				<section>
 					<p style="color: rgb(150, 212, 231);">Custom Developed Scripts</p>
-					<section>
-						Let's play
+					<section class="text-left">
+						<p class="fragment">Sample Code 1</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-7|4">
+							#!/bin/bash
+
+							if [[ $UID == 0 ]]; then
+								./check_id.sh
+							else
+								echo "Sorry come again later."
+							fi
+						</code></pre>
 					</section>
+
+					<section class="text-left">
+						<p class="fragment">Sample Code 2</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-15|8">
+							#!/bin/bash
+							
+							if [[ $UID == 0 ]]; then
+	
+								super_secret_password=$(cat /dev/urandom | head -c 16 | xxd -p)
+								read -p "Can you guess the password : " user_password
+							
+								if [[ $super_secret_password == $user_password ]]; then
+									echo "Access Granted!"
+									read -p "command : " cmd
+									/bin/bash -c $cmd
+								else 
+									echo "You shall not pass!"
+								fi
+							fi
+						</code></pre>
+					</section>
+
+					<section class="text-left">
+						<p class="fragment">Sample Code 3</p>
+						<pre data-id="code-animation"><code class="hljs bash fragment" data-trim data-line-numbers="1-16|11-14">
+							#!/bin/bash
+							
+							if [[ $UID == 0 ]]; then
+	
+								super_secret_password=$(cat /root/password.txt)
+								read -p "Can you guess the password : " user_password
+							
+								if [[ $super_secret_password == "$user_password" ]]
+									read -p "command : " cmd
+									/bin/bash -c $cmd
+								elif [[ $super_secret_password == $user_password ]]; then
+									echo "Nice Try"
+								else 
+									echo "You shall not pass!"
+								fi
+							fi
+						</code></pre>
+					</section>
+
 				</section>
 
 				<section>
@@ -655,6 +709,16 @@
 				</section>
 
 				<section>
+					<p style="color: rgb(150, 212, 231);">Additional Tools</p>
+					<section class="text-left">
+						<p>LinPEAS</p>
+						<a href="https://github.com/peass-ng/PEASS-ng/tree/master/linPEAS">https://github.com/peass-ng/PEASS-ng/tree/master/linPEAS</a>
+					</section>
+				</section>
+
+				
+
+				<section>
 					<p style="color: rgb(150, 212, 231);">Summary</p>
 					<section class="text-left">
 						<p class="fragment" style="font-size: 0.7em;">Linux PE Definition</p>
@@ -671,7 +735,7 @@
 								<li>Custom Developed Scripts</li>
 							</ul>
 						</ul>
-						<p class="fragment" style="font-size: 0.7em;">Solution (Detection and Mitigation)</p>
+						<p class="fragment" style="font-size: 0.7em;">Solutions and Mitigations</p>
 					</section>
 				</section>
 
